@@ -6,8 +6,7 @@ import '../styles/starred.scss'
 
 const Starred = ({ viewTrailer }) => {
 
-  const state = useSelector((state) => state)
-  const { starred } = state
+  const starred = useSelector((state) => state.starred)
   const { clearAllStarred } = starredSlice.actions
   const dispatch = useDispatch()
 

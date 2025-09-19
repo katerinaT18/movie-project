@@ -1,11 +1,12 @@
 import { Link, NavLink } from "react-router-dom"
 import { useSelector } from 'react-redux'
+import { selectStarredCount } from '../data/selectors'
 
 import '../styles/header.scss'
 
 const Header = ({ searchMovies }) => {
   
-  const { starredMovies } = useSelector((state) => state.starred)
+  const starredCount = useSelector(selectStarredCount)
 
   return (
     <header>
@@ -15,10 +16,10 @@ const Header = ({ searchMovies }) => {
 
       <nav>
         <NavLink to="/starred" data-testid="nav-starred" className="nav-starred">
-          {starredMovies.length > 0 ? (
+          {starredCount > 0 ? (
             <>
             <i className="bi bi-star-fill bi-star-fill-white" />
-            <sup className="star-number">{starredMovies.length}</sup>
+            <sup className="star-number">{starredCount}</sup>
             </>
           ) : (
             <i className="bi bi-star" />

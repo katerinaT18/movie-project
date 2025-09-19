@@ -1,3 +1,4 @@
+import React from 'react'
 import Movie from './Movie'
 import '../styles/movies.scss'
 
@@ -33,4 +34,4 @@ const Movies = ({ movies, viewTrailer }) => {
     )
 }
 
-export default Movies
+export default React.memo(Movies)
