@@ -1,7 +1,7 @@
 import Movie from './Movie'
 import '../styles/movies.scss'
 
-const Movies = ({ movies, viewTrailer, closeCard }) => {
+const Movies = ({ movies, viewTrailer }) => {
 
     // Don't render movies if there's an error or still loading
     if (movies.loading || movies.error) {
@@ -26,7 +26,6 @@ const Movies = ({ movies, viewTrailer, closeCard }) => {
                         movie={movie} 
                         key={movie.id}
                         viewTrailer={viewTrailer}
-                        closeCard={closeCard}
                     />
                 )
             })}

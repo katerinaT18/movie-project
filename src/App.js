@@ -24,9 +24,7 @@ const App = () => {
   
   const closeModal = () => setOpen(false)
   
-  const closeCard = () => {
-
-  }
+  // Removed unused closeCard function
 
   const getSearchResults = (query) => {
     if (query !== '') {
@@ -52,8 +50,13 @@ const App = () => {
   }
 
   const viewTrailer = async (movie) => {
-    setOpen(true)
-    await getMovie(movie.id)
+    try {
+      setOpen(true)
+      await getMovie(movie.id)
+    } catch (error) {
+      console.error('Error in viewTrailer:', error)
+      setOpen(false)
+    }
   }
 
   const getMovie = async (id) => {
@@ -90,7 +93,7 @@ const App = () => {
 
   useEffect(() => {
     getMovies()
-  }, [])
+  }, [searchQuery, dispatch])
 
   return (
     <ErrorBoundary>
@@ -143,7 +146,7 @@ const App = () => {
           )}
 
           <Routes>
-            <Route path="/" element={<Movies movies={movies} viewTrailer={viewTrailer} closeCard={closeCard} />} />
+            <Route path="/" element={<Movies movies={movies} viewTrailer={viewTrailer} />} />
             <Route path="/starred" element={<Starred viewTrailer={viewTrailer} />} />
             <Route path="/watch-later" element={<WatchLater viewTrailer={viewTrailer} />} />
             <Route path="*" element={<h1 className="not-found">Page Not Found</h1>} />
