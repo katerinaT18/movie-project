@@ -9,12 +9,12 @@ import Movies from './components/Movies'
 import Starred from './components/Starred'
 import WatchLater from './components/WatchLater'
 import YouTubePlayer from './components/YoutubePlayer'
+import ErrorBoundary from './components/ErrorBoundary'
 import './app.scss'
 
 const App = () => {
 
-  const state = useSelector((state) => state)
-  const { movies } = state  
+  const { movies } = useSelector((state) => state)  
   const dispatch = useDispatch()
   const [searchParams, setSearchParams] = useSearchParams()
   const searchQuery = searchParams.get('search')
@@ -51,22 +51,40 @@ const App = () => {
     }
   }
 
-  const viewTrailer = (movie) => {
-    getMovie(movie.id)
-    if (!videoKey) setOpen(true)
+  const viewTrailer = async (movie) => {
     setOpen(true)
+    await getMovie(movie.id)
   }
 
   const getMovie = async (id) => {
     const URL = `${ENDPOINT}/movie/${id}?api_key=${API_KEY}&append_to_response=videos`
 
     setVideoKey(null)
-    const videoData = await fetch(URL)
-      .then((response) => response.json())
+    
+    try {
+      const response = await fetch(URL)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const videoData = await response.json()
+      
+      // Check if the API returned an error
+      if (videoData.status_code && videoData.status_code !== 1) {
+        throw new Error(videoData.status_message || 'API returned an error')
+      }
 
-    if (videoData.videos && videoData.videos.results.length) {
-      const trailer = videoData.videos.results.find(vid => vid.type === 'Trailer')
-      setVideoKey(trailer ? trailer.key : videoData.videos.results[0].key)
+      if (videoData.videos && videoData.videos.results.length) {
+        const trailer = videoData.videos.results.find(vid => vid.type === 'Trailer')
+        setVideoKey(trailer ? trailer.key : videoData.videos.results[0].key)
+      } else {
+        setVideoKey(null)
+      }
+    } catch (error) {
+      console.error('Error fetching movie details:', error)
+      setVideoKey(null)
+      // You could also set an error state here to show user-friendly error messages
     }
   }
 
@@ -75,26 +93,64 @@ const App = () => {
   }, [])
 
   return (
-    <div className="App">
-      <Header searchMovies={searchMovies} searchParams={searchParams} setSearchParams={setSearchParams} />
+    <ErrorBoundary>
+      <div className="App">
+        <Header searchMovies={searchMovies} searchParams={searchParams} setSearchParams={setSearchParams} />
 
-      <div className="container">
-        {videoKey ? (
-          <YouTubePlayer
-            videoKey={videoKey}
-          />
-        ) : (
-          <div style={{padding: "30px"}}><h6>no trailer available. Try another movie</h6></div>
-        )}
+        <div className="container">
+          {videoKey ? (
+            <YouTubePlayer
+              videoKey={videoKey}
+            />
+          ) : (
+            <div style={{padding: "30px"}}><h6>no trailer available. Try another movie</h6></div>
+          )}
 
-        <Routes>
-          <Route path="/" element={<Movies movies={movies} viewTrailer={viewTrailer} closeCard={closeCard} />} />
-          <Route path="/starred" element={<Starred viewTrailer={viewTrailer} />} />
-          <Route path="/watch-later" element={<WatchLater viewTrailer={viewTrailer} />} />
-          <Route path="*" element={<h1 className="not-found">Page Not Found</h1>} />
-        </Routes>
+          {/* Error Display */}
+          {movies.error && (
+            <div className="alert alert-danger" role="alert" style={{
+              margin: '20px',
+              padding: '15px',
+              backgroundColor: '#f8d7da',
+              border: '1px solid #f5c6cb',
+              borderRadius: '5px',
+              color: '#721c24'
+            }}>
+              <strong>Error:</strong> {movies.error}
+              <button 
+                onClick={() => dispatch({ type: 'movies/clearError' })}
+                style={{
+                  float: 'right',
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '18px',
+                  cursor: 'pointer'
+                }}
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {movies.loading && (
+            <div className="text-center" style={{ padding: '40px' }}>
+              <div className="spinner-border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <p style={{ marginTop: '10px' }}>Loading movies...</p>
+            </div>
+          )}
+
+          <Routes>
+            <Route path="/" element={<Movies movies={movies} viewTrailer={viewTrailer} closeCard={closeCard} />} />
+            <Route path="/starred" element={<Starred viewTrailer={viewTrailer} />} />
+            <Route path="/watch-later" element={<WatchLater viewTrailer={viewTrailer} />} />
+            <Route path="*" element={<h1 className="not-found">Page Not Found</h1>} />
+          </Routes>
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   )
 }
 
