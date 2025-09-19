@@ -28,7 +28,7 @@ describe('watchLaterSlice test', () => {
 
       it('should remove all movies', () => {
         const initialState = { ...state, watchLaterMovies: moviesMock }
-        const action = watchLaterSlice.actions.remveAllWatchLater(state)
+        const action = watchLaterSlice.actions.removeAllWatchLater(state)
         const result = watchLaterSlice.reducer(initialState, action)
         expect(Object.keys(result.watchLaterMovies).length).toEqual(0)
       })
