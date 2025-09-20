@@ -24,7 +24,6 @@ const App = () => {
   const [videoKey, setVideoKey] = useState()
   const [isOpen, setOpen] = useState(false)
   const [selectedMovie, setSelectedMovie] = useState(null)
-  const [isTyping, setIsTyping] = useState(false)
   const navigate = useNavigate()
   
   const closeModal = useCallback(() => {
@@ -70,28 +69,6 @@ const App = () => {
     getSearchResults(query)
   }, [navigate, getSearchResults])
 
-  const handleSearchInput = useCallback((e) => {
-    const query = e.target.value
-    setIsTyping(true) // User is actively typing
-    
-    // Debounce the search to avoid too many API calls
-    setTimeout(() => {
-      setIsTyping(false) // User stopped typing
-      if (query.trim() === '') {
-        getSearchResults('')
-      } else {
-        getSearchResults(query)
-      }
-    }, 500) // 500ms delay
-  }, [getSearchResults])
-
-  const handleSearchFocus = useCallback(() => {
-    // Don't set typing state on focus, let input handler manage it
-  }, [])
-
-  const handleSearchBlur = useCallback(() => {
-    setIsTyping(false) // User left the input field
-  }, [])
 
   const getMovies = useCallback(() => {
     if (searchQuery) {
@@ -114,15 +91,13 @@ const App = () => {
       loadingMore: movies.loadingMore, 
       hasMore: movies.hasMore, 
       currentPage: movies.currentPage,
-      searchQuery,
-      isTyping
+      searchQuery
     })
     
-    if (movies.loadingMore || !movies.hasMore || isTyping) {
+    if (movies.loadingMore || !movies.hasMore) {
       console.log('❌ Not loading more - conditions not met', { 
         loadingMore: movies.loadingMore, 
-        hasMore: movies.hasMore,
-        isTyping
+        hasMore: movies.hasMore
       })
       return
     }
@@ -145,7 +120,7 @@ const App = () => {
         append: true 
       }))
     }
-  }, [movies.loadingMore, movies.hasMore, movies.currentPage, searchQuery, isTyping, dispatch])
+  }, [movies.loadingMore, movies.hasMore, movies.currentPage, searchQuery, dispatch])
 
   const viewTrailer = useCallback(async (movie) => {
     try {
@@ -252,9 +227,6 @@ const App = () => {
           searchMovies={searchMovies} 
           searchParams={searchParams} 
           setSearchParams={setSearchParams}
-          onSearchInput={handleSearchInput}
-          onSearchFocus={handleSearchFocus}
-          onSearchBlur={handleSearchBlur}
         />
 
         <div className="container">
@@ -342,7 +314,7 @@ const App = () => {
           )}
 
           <Routes>
-            <Route path="/" element={<Movies movies={movies} viewTrailer={viewTrailer} loadMoreMovies={loadMoreMovies} isTyping={isTyping} />} />
+            <Route path="/" element={<Movies movies={movies} viewTrailer={viewTrailer} loadMoreMovies={loadMoreMovies} />} />
             <Route path="/starred" element={<Starred viewTrailer={viewTrailer} />} />
             <Route path="/watch-later" element={<WatchLater viewTrailer={viewTrailer} />} />
             <Route path="*" element={<h1 className="not-found">Page Not Found</h1>} />

@@ -6,7 +6,7 @@ import useDebounce from '../hooks/useDebounce'
 
 import '../styles/header.scss'
 
-const Header = ({ searchMovies, onSearchInput, onSearchFocus, onSearchBlur }) => {
+const Header = ({ searchMovies }) => {
   const [searchValue, setSearchValue] = useState('')
   const debouncedSearchValue = useDebounce(searchValue, 500) // 500ms delay
   
@@ -23,9 +23,6 @@ const Header = ({ searchMovies, onSearchInput, onSearchFocus, onSearchBlur }) =>
     const value = e.target.value
     console.log('🔍 Header handleSearchInput called with value:', value)
     setSearchValue(value)
-    if (onSearchInput) {
-      onSearchInput(e)
-    }
     
     // Handle browser's built-in clear button
     if (value === '') {
@@ -42,9 +39,6 @@ const Header = ({ searchMovies, onSearchInput, onSearchFocus, onSearchBlur }) =>
         console.log('🏠 Home button clicked - clearing search')
         setSearchValue('')
         searchMovies('')
-        if (onSearchInput) {
-          onSearchInput({ target: { value: '' } })
-        }
         console.log('⬆️ Home clicked - should go to first page')
       }}>
         <i className="bi bi-film" />
@@ -72,8 +66,6 @@ const Header = ({ searchMovies, onSearchInput, onSearchFocus, onSearchBlur }) =>
           data-testid="search-movies"
           value={searchValue}
           onChange={handleSearchInput}
-          onFocus={onSearchFocus}
-          onBlur={onSearchBlur}
           onKeyUp={(e) => {
             if (e.key === 'Enter') {
               searchMovies(e.target.value)
