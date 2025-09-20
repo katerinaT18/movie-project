@@ -21,7 +21,7 @@ const Movie = ({ movie, viewTrailer }) => {
     }, [])
 
     return (
-        <div className="wrapper col-3 col-sm-4 col-md-3 col-lg-3 col-xl-2">
+        <div className="movie-card">
         <div className="card" onClick={(e) => e.currentTarget.classList.add('opened')} >
             <div className="card-body text-center">
                 <div className="overlay" />

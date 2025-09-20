@@ -20,7 +20,7 @@ const Movies = ({ movies, viewTrailer }) => {
     }
 
     return (
-        <div data-testid="movies">
+        <div className="movies-grid" data-testid="movies">
             {movies.movies.results.map((movie) => {
                 return (
                     <Movie 
