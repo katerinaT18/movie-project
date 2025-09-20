@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Routes, Route, createSearchParams, useSearchParams, useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from 'react-redux'
 import 'reactjs-popup/dist/index.css'
-import { fetchMovies } from './data/moviesSlice'
+import { fetchMovies, resetMovies } from './data/moviesSlice'
 import { ENDPOINT_SEARCH, ENDPOINT_DISCOVER, ENDPOINT, API_KEY } from './constants'
 import Header from './components/Header'
 import Movies from './components/Movies'
@@ -35,11 +35,22 @@ const App = () => {
   // Removed unused closeCard function
 
   const getSearchResults = useCallback((query) => {
+    // Reset movies state for new search
+    dispatch(resetMovies())
+    
     if (query !== '') {
-      dispatch(fetchMovies(`${ENDPOINT_SEARCH}&query=`+query))
+      dispatch(fetchMovies({ 
+        apiUrl: `${ENDPOINT_SEARCH}&query=`+query, 
+        page: 1, 
+        append: false 
+      }))
       setSearchParams(createSearchParams({ search: query }))
     } else {
-      dispatch(fetchMovies(ENDPOINT_DISCOVER))
+      dispatch(fetchMovies({ 
+        apiUrl: ENDPOINT_DISCOVER, 
+        page: 1, 
+        append: false 
+      }))
       setSearchParams()
     }
   }, [dispatch, setSearchParams])
@@ -51,11 +62,39 @@ const App = () => {
 
   const getMovies = useCallback(() => {
     if (searchQuery) {
-        dispatch(fetchMovies(`${ENDPOINT_SEARCH}&query=`+searchQuery))
+        dispatch(fetchMovies({ 
+          apiUrl: `${ENDPOINT_SEARCH}&query=`+searchQuery, 
+          page: 1, 
+          append: false 
+        }))
     } else {
-        dispatch(fetchMovies(ENDPOINT_DISCOVER))
+        dispatch(fetchMovies({ 
+          apiUrl: ENDPOINT_DISCOVER, 
+          page: 1, 
+          append: false 
+        }))
     }
   }, [searchQuery, dispatch])
+
+  const loadMoreMovies = useCallback(() => {
+    if (movies.loadingMore || !movies.hasMore) return
+    
+    const nextPage = movies.currentPage + 1
+    
+    if (searchQuery) {
+      dispatch(fetchMovies({ 
+        apiUrl: `${ENDPOINT_SEARCH}&query=`+searchQuery, 
+        page: nextPage, 
+        append: true 
+      }))
+    } else {
+      dispatch(fetchMovies({ 
+        apiUrl: ENDPOINT_DISCOVER, 
+        page: nextPage, 
+        append: true 
+      }))
+    }
+  }, [movies.loadingMore, movies.hasMore, movies.currentPage, searchQuery, dispatch])
 
   const viewTrailer = useCallback(async (movie) => {
     try {
@@ -245,7 +284,7 @@ const App = () => {
           )}
 
           <Routes>
-            <Route path="/" element={<Movies movies={movies} viewTrailer={viewTrailer} />} />
+            <Route path="/" element={<Movies movies={movies} viewTrailer={viewTrailer} loadMoreMovies={loadMoreMovies} />} />
             <Route path="/starred" element={<Starred viewTrailer={viewTrailer} />} />
             <Route path="/watch-later" element={<WatchLater viewTrailer={viewTrailer} />} />
             <Route path="*" element={<h1 className="not-found">Page Not Found</h1>} />

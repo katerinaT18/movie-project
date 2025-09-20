@@ -13,7 +13,7 @@ const isRetryableError = (error) => {
 
 export const fetchMovies = createAsyncThunk(
     'fetch-movies', 
-    async (apiUrl, { rejectWithValue, signal }) => {
+    async ({ apiUrl, page = 1, append = false }, { rejectWithValue, signal }) => {
         const maxRetries = 3
         let lastError
 
@@ -27,7 +27,12 @@ export const fetchMovies = createAsyncThunk(
                 const controller = new AbortController()
                 const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
 
-                const response = await fetch(apiUrl, {
+                // Add page parameter to URL
+                const urlWithPage = apiUrl.includes('?') 
+                    ? `${apiUrl}&page=${page}`
+                    : `${apiUrl}?page=${page}`
+
+                const response = await fetch(urlWithPage, {
                     signal: controller.signal,
                     headers: {
                         'Accept': 'application/json',
@@ -81,7 +86,7 @@ export const fetchMovies = createAsyncThunk(
                     throw new Error('Invalid response format from server')
                 }
                 
-                return data
+                return { ...data, append, page }
 
             } catch (error) {
                 lastError = error
@@ -137,9 +142,13 @@ const moviesSlice = createSlice({
     initialState: { 
         movies: [],
         loading: false,
+        loadingMore: false,
         error: null,
         lastFetch: null,
-        retryCount: 0
+        retryCount: 0,
+        currentPage: 1,
+        totalPages: 1,
+        hasMore: true
     },
     reducers: {
         clearError: (state) => {
@@ -149,26 +158,52 @@ const moviesSlice = createSlice({
         retryFetch: (state) => {
             state.retryCount += 1
             state.error = null
+        },
+        resetMovies: (state) => {
+            state.movies = []
+            state.currentPage = 1
+            state.hasMore = true
+            state.error = null
         }
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchMovies.pending, (state) => {
-                state.loading = true
+            .addCase(fetchMovies.pending, (state, action) => {
+                const { append } = action.meta.arg
+                if (append) {
+                    state.loadingMore = true
+                } else {
+                    state.loading = true
+                }
                 state.error = null
             })
             .addCase(fetchMovies.fulfilled, (state, action) => {
+                const { results, total_pages, page, append } = action.payload
+                
                 state.loading = false
-                state.movies = action.payload
+                state.loadingMore = false
                 state.error = null
                 state.lastFetch = new Date().toISOString()
                 state.retryCount = 0
+                state.currentPage = page
+                state.totalPages = total_pages
+                state.hasMore = page < total_pages
+                
+                if (append) {
+                    // Append new movies to existing ones
+                    state.movies = [...state.movies, ...results]
+                } else {
+                    // Replace movies for new search
+                    state.movies = results
+                }
             })
             .addCase(fetchMovies.rejected, (state, action) => {
                 state.loading = false
+                state.loadingMore = false
                 state.error = action.payload || { message: 'Failed to fetch movies' }
             })
     }
 })
 
+export const { clearError, retryFetch, resetMovies } = moviesSlice.actions
 export default moviesSlice

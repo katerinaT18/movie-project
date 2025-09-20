@@ -310,7 +310,8 @@
  
 
     h6.title {
-        margin-top: 10px;
+        margin-top: 4px;
+   
         font-size: 0.9rem;
         
         &.mobile-card {
@@ -318,7 +319,9 @@
         }            
         @media (max-width: 480px), (hover: none) {
             display: none;
-
+        }
+        
+        @media (max-width: 480px), (hover: none) {
             &.mobile-card {
                 display: block;
             }
@@ -387,4 +390,61 @@
     @media (max-width: 720px) {
         background-color: transparent;
     }    
+}
+
+// Infinite scroll loading states
+.loading-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #fff;
+  
+  .spinner-border {
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.3em;
+    border-color: #1CB5E0;
+    border-right-color: transparent;
+  }
+  
+  p {
+    margin-top: 15px;
+    font-size: 1rem;
+    color: #ccc;
+  }
+}
+
+.end-of-results {
+  padding: 30px 20px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  
+  p {
+    margin: 0;
+    font-style: italic;
+  }
+}
+
+// Loading spinner animation
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner-border {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  vertical-align: text-bottom;
+  border: 0.25em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
 }
