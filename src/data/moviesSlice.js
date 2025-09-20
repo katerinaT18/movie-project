@@ -160,10 +160,16 @@ const moviesSlice = createSlice({
             state.error = null
         },
         resetMovies: (state) => {
+            console.log('🔄 resetMovies reducer called - resetting pagination')
             state.movies = []
             state.currentPage = 1
+            state.totalPages = 1
             state.hasMore = true
+            state.loading = false
+            state.loadingMore = false
             state.error = null
+            state.retryCount = 0
+            console.log('✅ resetMovies completed - currentPage:', state.currentPage, 'hasMore:', state.hasMore)
         }
     },
     extraReducers: (builder) => {
@@ -180,6 +186,8 @@ const moviesSlice = createSlice({
             .addCase(fetchMovies.fulfilled, (state, action) => {
                 const { results, total_pages, page, append } = action.payload
                 
+                console.log('📄 fetchMovies.fulfilled - page:', page, 'total_pages:', total_pages, 'append:', append)
+                
                 state.loading = false
                 state.loadingMore = false
                 state.error = null
@@ -192,10 +200,14 @@ const moviesSlice = createSlice({
                 if (append) {
                     // Append new movies to existing ones
                     state.movies = [...state.movies, ...results]
+                    console.log('➕ Appended movies, total count:', state.movies.length)
                 } else {
-                    // Replace movies for new search
-                    state.movies = results
+                    // Replace movies for new search - ensure we start fresh
+                    state.movies = results || []
+                    console.log('🔄 Replaced movies, count:', state.movies.length)
                 }
+                
+                console.log('✅ State updated - currentPage:', state.currentPage, 'hasMore:', state.hasMore, 'movies count:', state.movies.length)
             })
             .addCase(fetchMovies.rejected, (state, action) => {
                 state.loading = false

@@ -1,14 +1,15 @@
 import { useEffect, useCallback, useRef } from 'react'
 
-const useInfiniteScroll = (callback, hasMore, isLoading) => {
+const useInfiniteScroll = (callback, hasMore, isLoading, isTyping = false) => {
   const observerRef = useRef()
   const lastElementRef = useCallback(
     (node) => {
-      if (isLoading) return
+      if (isLoading || isTyping) return
       if (observerRef.current) observerRef.current.disconnect()
       
       observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
+        if (entries[0].isIntersecting && hasMore && !isLoading && !isTyping) {
+          console.log('🔄 Infinite scroll triggered!', { hasMore, isLoading, isTyping })
           callback()
         }
       }, {
@@ -16,9 +17,12 @@ const useInfiniteScroll = (callback, hasMore, isLoading) => {
         rootMargin: '100px' // Start loading 100px before the element comes into view
       })
       
-      if (node) observerRef.current.observe(node)
+      if (node) {
+        console.log('👀 Observing last element for infinite scroll', { isTyping })
+        observerRef.current.observe(node)
+      }
     },
-    [isLoading, hasMore, callback]
+    [isLoading, hasMore, isTyping, callback]
   )
 
   useEffect(() => {
