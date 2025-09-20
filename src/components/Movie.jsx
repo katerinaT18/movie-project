@@ -71,4 +71,4 @@ const Movie = ({ movie, viewTrailer }) => {
     )
 }
 
-export default React.memo(Movie)
+export default Movie

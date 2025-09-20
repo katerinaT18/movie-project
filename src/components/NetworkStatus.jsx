@@ -75,4 +75,4 @@ const NetworkStatus = () => {
   return null
 }
 
-export default NetworkStatus
+export default React.memo(NetworkStatus)

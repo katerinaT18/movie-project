@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Routes, Route, createSearchParams, useSearchParams, useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from 'react-redux'
 import 'reactjs-popup/dist/index.css'
@@ -24,11 +24,11 @@ const App = () => {
   const [isOpen, setOpen] = useState(false)
   const navigate = useNavigate()
   
-  const closeModal = () => setOpen(false)
+  const closeModal = useCallback(() => setOpen(false), [])
   
   // Removed unused closeCard function
 
-  const getSearchResults = (query) => {
+  const getSearchResults = useCallback((query) => {
     if (query !== '') {
       dispatch(fetchMovies(`${ENDPOINT_SEARCH}&query=`+query))
       setSearchParams(createSearchParams({ search: query }))
@@ -36,22 +36,22 @@ const App = () => {
       dispatch(fetchMovies(ENDPOINT_DISCOVER))
       setSearchParams()
     }
-  }
+  }, [dispatch, setSearchParams])
 
-  const searchMovies = (query) => {
+  const searchMovies = useCallback((query) => {
     navigate('/')
     getSearchResults(query)
-  }
+  }, [navigate, getSearchResults])
 
-  const getMovies = () => {
+  const getMovies = useCallback(() => {
     if (searchQuery) {
         dispatch(fetchMovies(`${ENDPOINT_SEARCH}&query=`+searchQuery))
     } else {
         dispatch(fetchMovies(ENDPOINT_DISCOVER))
     }
-  }
+  }, [searchQuery, dispatch])
 
-  const viewTrailer = async (movie) => {
+  const viewTrailer = useCallback(async (movie) => {
     try {
       setOpen(true)
       await getMovie(movie.id)
@@ -60,7 +60,7 @@ const App = () => {
       errorLogger.logComponentError(error, 'viewTrailer', { movieId: movie.id })
       setOpen(false)
     }
-  }
+  }, [])
 
   const getMovie = async (id) => {
     const URL = `${ENDPOINT}/movie/${id}?api_key=${API_KEY}&append_to_response=videos`

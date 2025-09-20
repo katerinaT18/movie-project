@@ -1,12 +1,23 @@
+import React, { useState } from 'react'
 import { Link, NavLink } from "react-router-dom"
 import { useSelector } from 'react-redux'
 import { selectStarredCount } from '../data/selectors'
+import useDebounce from '../hooks/useDebounce'
 
 import '../styles/header.scss'
 
 const Header = ({ searchMovies }) => {
+  const [searchValue, setSearchValue] = useState('')
+  const debouncedSearchValue = useDebounce(searchValue, 500) // 500ms delay
   
   const starredCount = useSelector(selectStarredCount)
+
+  // Trigger search when debounced value changes
+  React.useEffect(() => {
+    if (debouncedSearchValue !== '') {
+      searchMovies(debouncedSearchValue)
+    }
+  }, [debouncedSearchValue, searchMovies])
 
   return (
     <header>
@@ -33,7 +44,13 @@ const Header = ({ searchMovies }) => {
       <div className="input-group rounded">
         <Link to="/" onClick={(e) => searchMovies('')} className="search-link" >
           <input type="search" data-testid="search-movies"
-            onKeyUp={(e) => searchMovies(e.target.value)} 
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            onKeyUp={(e) => {
+              if (e.key === 'Enter') {
+                searchMovies(e.target.value)
+              }
+            }}
             className="form-control rounded" 
             placeholder="Search movies..." 
             aria-label="Search movies" 
@@ -45,4 +62,4 @@ const Header = ({ searchMovies }) => {
   )
 }
 
-export default Header
+export default React.memo(Header)
