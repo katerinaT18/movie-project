@@ -144,7 +144,7 @@ const App = () => {
 
   useEffect(() => {
     getMovies()
-  }, [searchQuery, dispatch])
+  }, [searchQuery, dispatch, getMovies])
 
   return (
     <ErrorBoundary>
@@ -153,12 +153,35 @@ const App = () => {
         <Header searchMovies={searchMovies} searchParams={searchParams} setSearchParams={setSearchParams} />
 
         <div className="container">
-          {videoKey ? (
-            <YouTubePlayer
-              videoKey={videoKey}
-            />
-          ) : (
-            <div style={{padding: "30px"}}><h6>no trailer available. Try another movie</h6></div>
+          {isOpen && (
+            <div style={{ position: 'relative', margin: '20px 0' }}>
+              <button 
+                onClick={closeModal}
+                style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  right: '-10px',
+                  background: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '30px',
+                  height: '30px',
+                  cursor: 'pointer',
+                  zIndex: 1000
+                }}
+                aria-label="Close trailer"
+              >
+                ×
+              </button>
+              {videoKey ? (
+                <YouTubePlayer
+                  videoKey={videoKey}
+                />
+              ) : (
+                <div style={{padding: "30px"}}><h6>no trailer available. Try another movie</h6></div>
+              )}
+            </div>
           )}
 
           {/* Enhanced Error Display */}
