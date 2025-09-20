@@ -8,11 +8,12 @@ import Header from './components/Header'
 import Movies from './components/Movies'
 import Starred from './components/Starred'
 import WatchLater from './components/WatchLater'
-import YouTubePlayer from './components/YoutubePlayer'
+import YouTubeModal from './components/YouTubeModal'
 import ErrorBoundary from './components/ErrorBoundary'
 import NetworkStatus from './components/NetworkStatus'
 import errorLogger from './utils/errorLogger'
 import './app.scss'
+import './styles/modal.scss'
 
 const App = () => {
 
@@ -22,9 +23,14 @@ const App = () => {
   const searchQuery = searchParams.get('search')
   const [videoKey, setVideoKey] = useState()
   const [isOpen, setOpen] = useState(false)
+  const [selectedMovie, setSelectedMovie] = useState(null)
   const navigate = useNavigate()
   
-  const closeModal = useCallback(() => setOpen(false), [])
+  const closeModal = useCallback(() => {
+    setOpen(false)
+    setSelectedMovie(null)
+    setVideoKey(null)
+  }, [])
   
   // Removed unused closeCard function
 
@@ -53,12 +59,14 @@ const App = () => {
 
   const viewTrailer = useCallback(async (movie) => {
     try {
+      setSelectedMovie(movie)
       setOpen(true)
       await getMovie(movie.id)
     } catch (error) {
       console.error('Error in viewTrailer:', error)
       errorLogger.logComponentError(error, 'viewTrailer', { movieId: movie.id })
       setOpen(false)
+      setSelectedMovie(null)
     }
   }, [])
 
@@ -153,36 +161,6 @@ const App = () => {
         <Header searchMovies={searchMovies} searchParams={searchParams} setSearchParams={setSearchParams} />
 
         <div className="container">
-          {isOpen && (
-            <div style={{ position: 'relative', margin: '20px 0' }}>
-              <button 
-                onClick={closeModal}
-                style={{
-                  position: 'absolute',
-                  top: '-10px',
-                  right: '-10px',
-                  background: '#dc3545',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '50%',
-                  width: '30px',
-                  height: '30px',
-                  cursor: 'pointer',
-                  zIndex: 1000
-                }}
-                aria-label="Close trailer"
-              >
-                ×
-              </button>
-              {videoKey ? (
-                <YouTubePlayer
-                  videoKey={videoKey}
-                />
-              ) : (
-                <div style={{padding: "30px"}}><h6>no trailer available. Try another movie</h6></div>
-              )}
-            </div>
-          )}
 
           {/* Enhanced Error Display */}
           {movies.error && (
@@ -274,6 +252,14 @@ const App = () => {
           </Routes>
         </div>
       </div>
+
+      {/* YouTube Modal */}
+      <YouTubeModal
+        isOpen={isOpen}
+        onClose={closeModal}
+        videoKey={videoKey}
+        movieTitle={selectedMovie?.title}
+      />
     </ErrorBoundary>
   )
 }
