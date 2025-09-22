@@ -1,3 +1,4 @@
+import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import watchLaterSlice from '../data/watchLaterSlice'
@@ -6,16 +7,15 @@ import '../styles/starred.scss'
 
 const WatchLater = ({viewTrailer}) => {
 
-    const state = useSelector((state) => state)
-    const { watchLater } = state
-    const { remveAllWatchLater } = watchLaterSlice.actions
+    const watchLater = useSelector((state) => state.watchLater)
+    const { removeAllWatchLater } = watchLaterSlice.actions
     const dispatch = useDispatch()
 
   return (
     <div className="starred" data-testid="watch-later-div">
       {watchLater.watchLaterMovies.length > 0 && (<div data-testid="watch-later-movies" className="starred-movies">
         <h6 className="header">Watch Later List</h6>
-        <div className="row">
+        <div className="movies-grid">
         {watchLater.watchLaterMovies.map((movie) => (
           <Movie 
             movie={movie} 
@@ -26,7 +26,7 @@ const WatchLater = ({viewTrailer}) => {
         </div>
 
         <footer className="text-center">
-          <button className="btn btn-primary" onClick={() => dispatch(remveAllWatchLater())}>Empty list</button>
+          <button className="btn btn-primary" onClick={() => dispatch(removeAllWatchLater())}>Empty list</button>
         </footer>
       </div>)}
 
@@ -39,4 +39,4 @@ const WatchLater = ({viewTrailer}) => {
   )
 }
 
-export default WatchLater
+export default React.memo(WatchLater)

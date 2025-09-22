@@ -5,15 +5,105 @@
     @media (max-width: 720px) {
         padding-top: 70px;        
     }
+}
+
+// CSS Grid Layout for Movies
+.movies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    animation: fadeIn 0.5s ease-in-out;
+    
+    // Add smooth transitions for grid items
+    .movie-card {
+        transition: transform 0.2s ease-in-out;
+        animation: slideInUp 0.3s ease-out;
+        
+        &:hover {
+            transform: translateY(-5px);
+        }
+    }
+
+    // Responsive breakpoints
+    @media (min-width: 1200px) {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 24px;
+    }
+
+    @media (min-width: 992px) and (max-width: 1199px) {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 22px;
+    }
+
+    @media (min-width: 768px) and (max-width: 991px) {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    @media (min-width: 576px) and (max-width: 767px) {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+    }
+
+    @media (min-width: 480px) and (max-width: 575px) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    @media (max-width: 479px) {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 15px;
+    }
+}
+
+// Animations
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.movie-card {
+    // Remove any existing padding/margin that might interfere with grid
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: fit-content;
+    
+    // Ensure consistent aspect ratio for movie cards
+    .card {
+        aspect-ratio: 2/3;
+        min-height: 300px;
+        max-height: 450px;
+        
+        @media (max-width: 479px) {
+            aspect-ratio: unset;
+            min-height: auto;
+            max-height: none;
+        }
+    }
 
     a {
         color: #1CB5E0;
         text-decoration: none;
-    }
-
-    .wrapper {
-        padding: 0 6px;
-        margin-bottom: 2rem;
     }
 
     .card, 
@@ -192,7 +282,7 @@
     }
 
     &:hover { 
-        transform: scale(1.1); 
+        transform: scale(1.05); // Reduced scale to work better with grid hover effect
 
         .overlay {
             opacity: .8;
@@ -220,7 +310,8 @@
  
 
     h6.title {
-        margin-top: 10px;
+        margin-top: 4px;
+   
         font-size: 0.9rem;
         
         &.mobile-card {
@@ -228,7 +319,9 @@
         }            
         @media (max-width: 480px), (hover: none) {
             display: none;
-
+        }
+        
+        @media (max-width: 480px), (hover: none) {
             &.mobile-card {
                 display: block;
             }
@@ -297,4 +390,61 @@
     @media (max-width: 720px) {
         background-color: transparent;
     }    
+}
+
+// Infinite scroll loading states
+.loading-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #fff;
+  
+  .spinner-border {
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.3em;
+    border-color: #1CB5E0;
+    border-right-color: transparent;
+  }
+  
+  p {
+    margin-top: 15px;
+    font-size: 1rem;
+    color: #ccc;
+  }
+}
+
+.end-of-results {
+  padding: 30px 20px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  
+  p {
+    margin: 0;
+    font-style: italic;
+  }
+}
+
+// Loading spinner animation
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner-border {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  vertical-align: text-bottom;
+  border: 0.25em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
 }

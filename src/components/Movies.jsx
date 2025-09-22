@@ -1,22 +1,114 @@
+import React from 'react'
 import Movie from './Movie'
+import useInfiniteScroll from '../hooks/useInfiniteScroll'
 import '../styles/movies.scss'
 
-const Movies = ({ movies, viewTrailer, closeCard }) => {
+const Movies = ({ movies, viewTrailer, loadMoreMovies }) => {
+    // Debug logging
+    console.log('🎬 Movies component render:', { 
+        hasMore: movies.hasMore, 
+        loadingMore: movies.loadingMore, 
+        movieCount: movies.movies?.length || 0
+    })
+    
+    // Set up infinite scroll - MUST be called before any early returns
+    const lastElementRef = useInfiniteScroll(
+        loadMoreMovies,
+        movies.hasMore,
+        movies.loadingMore
+    )
+
+    // Don't render movies if there's an error or still loading
+    if (movies.loading || movies.error) {
+        return null
+    }
+
+    // Handle case where movies data might not be available
+    if (!movies.movies || movies.movies.length === 0) {
+        return (
+            <div className="text-center" style={{ padding: '40px' }}>
+                <h5>No movies found</h5>
+                <p>Try searching for a different movie or check your connection.</p>
+            </div>
+        )
+    }
 
     return (
-        <div data-testid="movies">
-            {movies.movies.results?.map((movie) => {
+        <div className="movies-grid" data-testid="movies">
+            {movies.movies.map((movie, index) => {
+                // Attach ref to the last movie for infinite scroll
+                const isLastMovie = index === movies.movies.length - 1
+                
                 return (
-                    <Movie 
-                        movie={movie} 
-                        key={movie.id}
-                        viewTrailer={viewTrailer}
-                        closeCard={closeCard}
-                    />
+                    <div 
+                        key={movie.id} 
+                        ref={isLastMovie ? lastElementRef : null}
+                    >
+                        <Movie 
+                            movie={movie} 
+                            viewTrailer={viewTrailer}
+                        />
+                    </div>
                 )
             })}
+            
+            {/* Loading indicator for infinite scroll */}
+            {movies.loadingMore && (
+                <div className="loading-more" style={{
+                    gridColumn: '1 / -1',
+                    textAlign: 'center',
+                    padding: '20px',
+                    color: '#fff'
+                }}>
+                    <div className="spinner-border text-primary" role="status">
+                        <span className="visually-hidden">Loading more movies...</span>
+                    </div>
+                    <p style={{ marginTop: '10px' }}>Loading more movies...</p>
+                </div>
+            )}
+            
+            {/* Manual Load More Button (fallback) */}
+            <div className="load-more-button" style={{
+                gridColumn: '1 / -1',
+                textAlign: 'center',
+                padding: '20px'
+            }}>
+                    <button 
+                        className="btn btn-primary"
+                        onClick={() => {
+                            console.log('🔘 Load More button clicked!', { hasMore: movies.hasMore, loadingMore: movies.loadingMore })
+                            loadMoreMovies()
+                        }}
+                        disabled={movies.loadingMore}
+                        style={{ 
+                            padding: '10px 20px', 
+                            fontSize: '16px',
+                            opacity: movies.loadingMore ? 0.5 : 1,
+                            cursor: movies.loadingMore ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        {movies.loadingMore ? 'Loading...' : 'Load More Movies'}
+                    </button>
+                    <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+                        Debug: hasMore={movies.hasMore ? 'true' : 'false'}, loadingMore={movies.loadingMore ? 'true' : 'false'}
+                    </p>
+            </div>
+            
+            
+            {/* End of results message */}
+            {!movies.hasMore && movies.movies.length > 0 && (
+                <div className="end-of-results" style={{
+                    gridColumn: '1 / -1',
+                    textAlign: 'center',
+                    padding: '20px',
+                    color: '#666',
+                    fontSize: '14px'
+                }}>
+                    <p>🎬 You've reached the end of the movie list!</p>
+                </div>
+            )}
         </div>
     )
 }
 
-export default Movies
+export default React.memo(Movies)

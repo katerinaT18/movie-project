@@ -1,33 +1,34 @@
+import React, { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import starredSlice from '../data/starredSlice'
 import watchLaterSlice from '../data/watchLaterSlice'
+import { selectIsMovieStarred, selectIsMovieInWatchLater } from '../data/selectors'
 import placeholder from '../assets/not-found-500X750.jpeg'
 
-const Movie = ({ movie, viewTrailer, closeCard }) => {
+const Movie = ({ movie, viewTrailer }) => {
 
-    const state = useSelector((state) => state)
-    const { starred, watchLater } = state
+    const isStarred = useSelector((state) => selectIsMovieStarred(state, movie.id))
+    const isInWatchLater = useSelector((state) => selectIsMovieInWatchLater(state, movie.id))
     const { starMovie, unstarMovie } = starredSlice.actions
     const { addToWatchLater, removeFromWatchLater } = watchLaterSlice.actions
 
     const dispatch = useDispatch()
 
-    const myClickHandler = (e) => {
-        if (!e) var e = window.event
+    const myClickHandler = useCallback((e) => {
         e.cancelBubble = true
         if (e.stopPropagation) e.stopPropagation()
         e.target.parentElement.parentElement.classList.remove('opened')
-    }
+    }, [])
 
     return (
-        <div className="wrapper col-3 col-sm-4 col-md-3 col-lg-3 col-xl-2">
+        <div className="movie-card">
         <div className="card" onClick={(e) => e.currentTarget.classList.add('opened')} >
             <div className="card-body text-center">
                 <div className="overlay" />
                 <div className="info_panel">
                     <div className="overview">{movie.overview}</div>
                     <div className="year">{movie.release_date?.substring(0, 4)}</div>
-                    {!starred.starredMovies.map(movie => movie.id).includes(movie.id) ? (
+                    {!isStarred ? (
                         <span className="btn-star" data-testid="starred-link" onClick={() => 
                             dispatch(starMovie({
                                 id: movie.id, 
@@ -44,7 +45,7 @@ const Movie = ({ movie, viewTrailer, closeCard }) => {
                             <i className="bi bi-star-fill" data-testid="star-fill" />
                         </span>
                     )}
-                    {!watchLater.watchLaterMovies.map(movie => movie.id).includes(movie.id) ? (
+                    {!isInWatchLater ? (
                         <button type="button" data-testid="watch-later" className="btn btn-light btn-watch-later" onClick={() => dispatch(addToWatchLater({
                                 id: movie.id, 
                                 overview: movie.overview, 
@@ -69,4 +70,4 @@ const Movie = ({ movie, viewTrailer, closeCard }) => {
     )
 }
 
-export default Movie
+export default React.memo(Movie)

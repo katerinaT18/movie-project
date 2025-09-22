@@ -3,19 +3,35 @@ import { createSlice } from "@reduxjs/toolkit"
 const starredSlice = createSlice({
     name: 'starred',
     initialState: {
-        starredMovies: []
+        starredMovies: [],
+        error: null
     },
     reducers: {
         starMovie: (state, action) => {
-            state.starredMovies = [action.payload, ...state.starredMovies]
+            // Check if movie is already starred to prevent duplicates
+            const existingMovie = state.starredMovies.find(movie => movie.id === action.payload.id)
+            if (!existingMovie) {
+                state.starredMovies = [action.payload, ...state.starredMovies]
+                state.error = null
+            }
         },
         unstarMovie: (state, action) => {
             const indexOfId = state.starredMovies.findIndex(key => key.id === action.payload.id)
-            state.starredMovies.splice(indexOfId, 1)
+            if (indexOfId !== -1) {
+                state.starredMovies.splice(indexOfId, 1)
+                state.error = null
+            }
         },
         clearAllStarred: (state) => {
             state.starredMovies = []
+            state.error = null
         },
+        setError: (state, action) => {
+            state.error = action.payload
+        },
+        clearError: (state) => {
+            state.error = null
+        }
     },
 })
 

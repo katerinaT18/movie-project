@@ -1,24 +1,55 @@
+import React, { useState } from 'react'
 import { Link, NavLink } from "react-router-dom"
 import { useSelector } from 'react-redux'
+import { selectStarredCount } from '../data/selectors'
+import useDebounce from '../hooks/useDebounce'
 
 import '../styles/header.scss'
 
 const Header = ({ searchMovies }) => {
+  const [searchValue, setSearchValue] = useState('')
+  const debouncedSearchValue = useDebounce(searchValue, 500) // 500ms delay
   
-  const { starredMovies } = useSelector((state) => state.starred)
+  const starredCount = useSelector(selectStarredCount)
+
+  // Trigger search when debounced value changes
+  React.useEffect(() => {
+    if (debouncedSearchValue !== '') {
+      searchMovies(debouncedSearchValue)
+    }
+  }, [debouncedSearchValue, searchMovies])
+
+  const handleSearchInput = (e) => {
+    const value = e.target.value
+    console.log('🔍 Header handleSearchInput called with value:', value)
+    setSearchValue(value)
+    
+    // Handle browser's built-in clear button
+    if (value === '') {
+      console.log('❌ Search cleared via x button - calling searchMovies("")')
+      // Clear search and go to first page
+      searchMovies('')
+      console.log('⬆️ Search cleared - should go to first page')
+    }
+  }
 
   return (
     <header>
-      <Link to="/" data-testid="home" onClick={() => searchMovies('')}>
+      <Link to="/" data-testid="home" onClick={() => {
+        console.log('🏠 Home button clicked - clearing search')
+        setSearchValue('')
+        searchMovies('')
+        console.log('⬆️ Home clicked - should go to first page')
+      }}>
         <i className="bi bi-film" />
       </Link>
 
       <nav>
         <NavLink to="/starred" data-testid="nav-starred" className="nav-starred">
-          {starredMovies.length > 0 ? (
+          {starredCount > 0 ? (
             <>
             <i className="bi bi-star-fill bi-star-fill-white" />
-            <sup className="star-number">{starredMovies.length}</sup>
+            <sup className="star-number">{starredCount}</sup>
             </>
           ) : (
             <i className="bi bi-star" />
@@ -30,18 +61,24 @@ const Header = ({ searchMovies }) => {
       </nav>
 
       <div className="input-group rounded">
-        <Link to="/" onClick={(e) => searchMovies('')} className="search-link" >
-          <input type="search" data-testid="search-movies"
-            onKeyUp={(e) => searchMovies(e.target.value)} 
-            className="form-control rounded" 
-            placeholder="Search movies..." 
-            aria-label="Search movies" 
-            aria-describedby="search-addon" 
-            />
-        </Link>            
+        <input 
+          type="search" 
+          data-testid="search-movies"
+          value={searchValue}
+          onChange={handleSearchInput}
+          onKeyUp={(e) => {
+            if (e.key === 'Enter') {
+              searchMovies(e.target.value)
+            }
+          }}
+          className="form-control rounded" 
+          placeholder="Search movies..." 
+          aria-label="Search movies" 
+          aria-describedby="search-addon"
+        />
       </div>      
     </header>
   )
 }
 
-export default Header
+export default React.memo(Header)

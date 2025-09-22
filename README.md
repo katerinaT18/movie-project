@@ -12,6 +12,22 @@ In the project directory, you can run:
 
 Install all dependencies
 
+### Environment Setup
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Get your TMDB API key from [https://www.themoviedb.org/settings/api](https://www.themoviedb.org/settings/api)
+
+3. Update the `.env` file with your API key:
+   ```
+   REACT_APP_MOVIES_API_KEY=my_movies_api_key
+   ```
+
+**Important**: Never commit your `.env` file to version control. It contains sensitive information.
+
 ### `npm start`
 
 Runs the app in the development mode.\
